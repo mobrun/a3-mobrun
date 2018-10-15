@@ -24,7 +24,7 @@ Below, the first `getCensus()` call is populating a new dataframe called `income
 The second `getCensus()` call is grabbing just county results for the 9 counties.
 
 ```{r load census data}
-incometract16 <- getCensus(name = "acs/acs5", key = Sys.getenv("INSERTKEYHERE"), vintage = "2016", vars = "INSERTVARIABLEHERE",
+incometract16 <- getCensus(name = "acs/acs5", key = Sys.getenv("278f7a9a4db9117d1ea0efdd453dec18fdd8bc14"), vintage = "2016", vars = "B19001_001E",
 region = "tract:*", regionin = "state:06+county:001,013,041,055,075,081,085,095,097")
 
 colnames(incometract16)[4] <- "Tract"
@@ -45,7 +45,7 @@ income$FIPS <- paste(incometract16$state,incometract16$county,incometract16$trac
 
 income <- income %>% left_join(incomecounty16 %>% select("county","County"), by = c("county" = "county"))
 
-income$"Bay Area" <- 87000
+income$"Bay Area" <- 86990
 income <- income %>% filter(Tract > 0)
 ```
 
