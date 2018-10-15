@@ -29,7 +29,7 @@ region = "tract:*", regionin = "state:06+county:001,013,041,055,075,081,085,095,
 
 colnames(incometract16)[4] <- "Tract"
 
-incomecounty16 <- getCensus(name = "acs/acs5", key = Sys.getenv("INSERTKEYHERE"), vintage = "2016", vars = "INSERTVARIABLEHERE",
+incomecounty16 <- getCensus(name = "acs/acs5", key = Sys.getenv("278f7a9a4db9117d1ea0efdd453dec18fdd8bc14"), vintage = "2016", vars = "B19001_001E",
 region = "county:001,013,041,055,075,081,085,095,097", regionin = "state:06")
 
 colnames(incomecounty16)[3] <- "County"
