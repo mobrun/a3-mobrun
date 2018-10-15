@@ -1,0 +1,54 @@
+---
+title: "a3prep"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(rmarkdown)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(censusapi)
+```
+
+The `censusapi` R package has a specific way of interfacing with a more generic API process. You can read about it in detail at https://hrecht.github.io/censusapi/articles/getting-started.html. Basically, the datasets that the U.S. Census Bureau has made available through its API are at https://api.census.gov/data.html. Using the `getCensus()` function, you can select specific variables, time periods, and geographies from any database in that list. 
+
+Below, the first `getCensus()` call is populating a new dataframe called `incometract16` with the contents of the ACS 2016 5-yr estimate for median household income for tracts within 9 counties in California (FIPS ID 06). The 9 counties have unique IDs, 001,013,041,055,075,081,085,095,097, which you would find yourself on a Census website. You need to insert (1) your API key, which you should have received in an email from the Census and (2) the correct variable ID for median household income, which you should be able to find in https://api.census.gov/data/2016/acs/acs5/variables.html. The specific structure of the function call can be learned from the package creator's documentation.
+
+The second `getCensus()` call is grabbing just county results for the 9 counties.
+
+```{r load census data}
+incometract16 <- getCensus(name = "acs/acs5", key = Sys.getenv("278f7a9a4db9117d1ea0efdd453dec18fdd8bc14"), vintage = "2016", vars = "B19001_001E",
+region = "tract:*", regionin = "state:06+county:001,013,041,055,075,081,085,095,097")
+
+colnames(incometract16)[4] <- "Tract"
+
+incomecounty16 <- getCensus(name = "acs/acs5", key = Sys.getenv("278f7a9a4db9117d1ea0efdd453dec18fdd8bc14"), vintage = "2016", vars = "B19001_001E",
+region = "county:001,013,041,055,075,081,085,095,097", regionin = "state:06")
+
+colnames(incomecounty16)[3] <- "County"
+```
+
+The next chunk creates the final output we want, `income`, and uses a join command like in A1 to get the census tract and county level information connected to each row of data. It also drops a fixed result for Bay Area wide median household income. It's set at 87000 below, but if you got an actual result from that part of the assignment, revise it in the code below.
+
+Lastly, some census tracts did not have ACS income data so they're reported from the API as a large negative number -- the last line filters negative values out.
+
+```{r join tract, county, and bayarea data}
+income <- incometract16 %>% select("county","Tract")
+income$FIPS <- paste(incometract16$state,incometract16$county,incometract16$tract,sep="")
+
+income <- income %>% left_join(incomecounty16 %>% select("county","County"), by = c("county" = "county"))
+
+income$"Bay Area" <- 86990
+income <- income %>% filter(Tract > 0)
+```
+
+```{r export}
+write.csv(income, file = "income.csv")
+```
